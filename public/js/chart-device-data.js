@@ -12,19 +12,22 @@ $(document).ready(() => {
       this.deviceId = deviceId;
       this.maxLen = 50;
       this.timeData = new Array(this.maxLen);
-      this.temperatureData = new Array(this.maxLen);
-      this.humidityData = new Array(this.maxLen);
+      this.noiseData = new Array(this.maxLen);
+      this.capacityData = new Array(this.maxLen);
+      this.airpollutionData = new Array(this.maxLen);
     }
 
-    addData(time, temperature, humidity) {
+    addData(time, noise, capacity, airpollution) {
       this.timeData.push(time);
-      this.temperatureData.push(temperature);
-      this.humidityData.push(humidity || null);
+      this.noiseData.push(noise);
+      this.capacityData.push(capacity || null);
+      this.airpollutionData.push(airpollution || null);
 
       if (this.timeData.length > this.maxLen) {
         this.timeData.shift();
-        this.temperatureData.shift();
-        this.humidityData.shift();
+        this.noiseData.shift();
+        this.capacityData.shift();
+        this.airpollutionData.shift();
       }
     }
   }
@@ -58,8 +61,8 @@ $(document).ready(() => {
     datasets: [
       {
         fill: false,
-        label: 'Temperature',
-        yAxisID: 'Temperature',
+        label: 'Noise',
+        yAxisID: 'noise',
         borderColor: 'rgba(255, 204, 0, 1)',
         pointBoarderColor: 'rgba(255, 204, 0, 1)',
         backgroundColor: 'rgba(255, 204, 0, 0.4)',
@@ -69,8 +72,19 @@ $(document).ready(() => {
       },
       {
         fill: false,
-        label: 'Humidity',
-        yAxisID: 'Humidity',
+        label: 'Capacity',
+        yAxisID: 'capacity',
+        borderColor: 'rgba(24, 120, 240, 1)',
+        pointBoarderColor: 'rgba(24, 120, 240, 1)',
+        backgroundColor: 'rgba(24, 120, 240, 0.4)',
+        pointHoverBackgroundColor: 'rgba(24, 120, 240, 1)',
+        pointHoverBorderColor: 'rgba(24, 120, 240, 1)',
+        spanGaps: true,
+      },
+      {
+        fill: false,
+        label: 'Air Pollution',
+        yAxisID: 'airpollution',
         borderColor: 'rgba(24, 120, 240, 1)',
         pointBoarderColor: 'rgba(24, 120, 240, 1)',
         backgroundColor: 'rgba(24, 120, 240, 0.4)',
@@ -84,19 +98,28 @@ $(document).ready(() => {
   const chartOptions = {
     scales: {
       yAxes: [{
-        id: 'Temperature',
+        id: 'noise',
         type: 'linear',
         scaleLabel: {
-          labelString: 'Temperature (ºC)',
+          labelString: 'noise (db)',
           display: true,
         },
         position: 'left',
       },
       {
-        id: 'Humidity',
+        id: 'capacity',
         type: 'linear',
         scaleLabel: {
-          labelString: 'Humidity (%)',
+          labelString: 'capacity (n)',
+          display: true,
+        },
+        position: 'right',
+      },
+      {
+        id: 'airpollution',
+        type: 'linear',
+        scaleLabel: {
+          labelString: 'airpollution (%)',
           display: true,
         },
         position: 'right',
@@ -122,15 +145,16 @@ $(document).ready(() => {
   function OnSelectionChange() {
     const device = trackedDevices.findDevice(listOfDevices[listOfDevices.selectedIndex].text);
     chartData.labels = device.timeData;
-    chartData.datasets[0].data = device.temperatureData;
-    chartData.datasets[1].data = device.humidityData;
+    chartData.datasets[0].data = device.noiseData;
+    chartData.datasets[1].data = device.capacityData;
+    chartData.datasets[1].data = device.airpollutionData;    
     myLineChart.update();
   }
   listOfDevices.addEventListener('change', OnSelectionChange, false);
 
   // When a web socket message arrives:
   // 1. Unpack it
-  // 2. Validate it has date/time and temperature
+  // 2. Validate it has date/time and noise
   // 3. Find or create a cached device to hold the telemetry data
   // 4. Append the telemetry data
   // 5. Update the chart UI
@@ -139,8 +163,8 @@ $(document).ready(() => {
       const messageData = JSON.parse(message.data);
       console.log(messageData);
 
-      // time and either temperature or humidity are required
-      if (!messageData.MessageDate || (!messageData.IotData.temperature && !messageData.IotData.humidity)) {
+      // time and either noise or capacity are required
+      if (!messageData.MessageDate || (!messageData.IotData.noise && !messageData.IotData.capacity && !messageData.IotData.airpollution)) {
         return;
       }
 
@@ -148,13 +172,13 @@ $(document).ready(() => {
       const existingDeviceData = trackedDevices.findDevice(messageData.DeviceId);
 
       if (existingDeviceData) {
-        existingDeviceData.addData(messageData.MessageDate, messageData.IotData.temperature, messageData.IotData.humidity);
+        existingDeviceData.addData(messageData.MessageDate, messageData.IotData.noise, messageData.IotData.capacity, messageData.IotData.airpollution);
       } else {
         const newDeviceData = new DeviceData(messageData.DeviceId);
         trackedDevices.devices.push(newDeviceData);
         const numDevices = trackedDevices.getDevicesCount();
         deviceCount.innerText = numDevices === 1 ? `${numDevices} device` : `${numDevices} devices`;
-        newDeviceData.addData(messageData.MessageDate, messageData.IotData.temperature, messageData.IotData.humidity);
+        newDeviceData.addData(messageData.MessageDate, messageData.IotData.noise, messageData.IotData.capacity,messageData.IotData.airpollution);
 
         // add device to the UI list
         const node = document.createElement('option');

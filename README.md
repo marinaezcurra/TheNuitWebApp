@@ -7,12 +7,12 @@ products:
 - azure-iot-hub
 name: IoTHub data visualization in web application
 urlFragment: web-app-visualization
-description: "This repo contains code for a web application, which can read temperature and humidity data from IoT Hub and show the real-time data on a web page."
+description: "This repo contains code for a web application, which can read noise and capacity data from IoT Hub and show the real-time data on a web page."
 ---
 
 # web-apps-node-iot-hub-data-visualization
 
-This repo contains code for a web application, which can read temperature and humidity data from IoT Hub and show the real-time data in a line chart on the web page.
+This repo contains code for a web application, which can read noise and capacity data from IoT Hub and show the real-time data in a line chart on the web page.
 
 ## Browser compatiblity
 
@@ -50,9 +50,9 @@ Sign in to the [Azure portal](https://portal.azure.com/).
 
 ## Send device data
 
-- For quickest results, simulate temperature data using the [Raspberry Pi Azure IoT Online Simulator](https://azure-samples.github.io/raspberry-pi-web-simulator/#Getstarted). Paste in the **device connection string**, and select the **Run** button.
+- For quickest results, simulate noise data using the [Raspberry Pi Azure IoT Online Simulator](https://azure-samples.github.io/raspberry-pi-web-simulator/#Getstarted). Paste in the **device connection string**, and select the **Run** button.
 
-- If you have a physical Raspberry Pi and BME280 sensor, you may measure and report real temperature and humidity values by following the [Connect Raspberry Pi to Azure IoT Hub (Node.js)](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-raspberry-pi-kit-node-get-started) tutorial.
+- If you have a physical Raspberry Pi and BME280 sensor, you may measure and report real noise and capacity values by following the [Connect Raspberry Pi to Azure IoT Hub (Node.js)](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-raspberry-pi-kit-node-get-started) tutorial.
 
 ## Run the visualization website
 
