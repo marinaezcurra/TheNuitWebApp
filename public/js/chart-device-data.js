@@ -12,22 +12,22 @@ $(document).ready(() => {
       this.deviceId = deviceId;
       this.maxLen = 50;
       this.timeData = new Array(this.maxLen);
-      this.noiseData = new Array(this.maxLen);
-      this.capacityData = new Array(this.maxLen);
-      this.airpollutionData = new Array(this.maxLen);
+      this.decibelsData = new Array(this.maxLen);
+      this.occupancyData = new Array(this.maxLen);
+      this.air_qualityData = new Array(this.maxLen);
     }
 
-    addData(time, noise, capacity, airpollution) {
+    addData(time, decibels, occupancy, air_quality) {
       this.timeData.push(time);
-      this.noiseData.push(noise);
-      this.capacityData.push(capacity || null);
-      this.airpollutionData.push(airpollution || null);
+      this.decibelsData.push(decibels);
+      this.occupancyData.push(occupancy || null);
+      this.air_qualityData.push(air_quality || null);
 
       if (this.timeData.length > this.maxLen) {
         this.timeData.shift();
-        this.noiseData.shift();
-        this.capacityData.shift();
-        this.airpollutionData.shift();
+        this.decibelsData.shift();
+        this.occupancyData.shift();
+        this.air_qualityData.shift();
       }
     }
   }
@@ -61,8 +61,8 @@ $(document).ready(() => {
     datasets: [
       {
         fill: false,
-        label: 'Noise',
-        yAxisID: 'noise',
+        label: 'decibels',
+        yAxisID: 'decibels',
         borderColor: 'rgba(255, 204, 0, 1)',
         pointBoarderColor: 'rgba(255, 204, 0, 1)',
         backgroundColor: 'rgba(255, 204, 0, 0.4)',
@@ -72,8 +72,8 @@ $(document).ready(() => {
       },
       {
         fill: false,
-        label: 'Capacity',
-        yAxisID: 'capacity',
+        label: 'occupancy',
+        yAxisID: 'occupancy',
         borderColor: 'rgba(24, 120, 240, 1)',
         pointBoarderColor: 'rgba(24, 120, 240, 1)',
         backgroundColor: 'rgba(24, 120, 240, 0.4)',
@@ -83,13 +83,13 @@ $(document).ready(() => {
       },
       {
         fill: false,
-        label: 'Air Pollution',
-        yAxisID: 'airpollution',
-        borderColor: 'rgba(24, 120, 240, 1)',
-        pointBoarderColor: 'rgba(24, 120, 240, 1)',
-        backgroundColor: 'rgba(24, 120, 240, 0.4)',
-        pointHoverBackgroundColor: 'rgba(24, 120, 240, 1)',
-        pointHoverBorderColor: 'rgba(24, 120, 240, 1)',
+        label: 'Air Quality',
+        yAxisID: 'air_quality',
+        borderColor: 'rgba(245, 66, 66, 1)',
+        pointBoarderColor: 'rgba(245, 66, 66, 1)',
+        backgroundColor: 'rgba(245, 66, 66, 0.4)',
+        pointHoverBackgroundColor: 'rgba(245, 66, 66, 1)',
+        pointHoverBorderColor: 'rgba(245, 66, 66, 1)',
         spanGaps: true,
       }
     ]
@@ -98,28 +98,28 @@ $(document).ready(() => {
   const chartOptions = {
     scales: {
       yAxes: [{
-        id: 'noise',
+        id: 'decibels',
         type: 'linear',
         scaleLabel: {
-          labelString: 'noise (db)',
+          labelString: 'decibels (db)',
           display: true,
         },
         position: 'left',
       },
       {
-        id: 'capacity',
+        id: 'occupancy',
         type: 'linear',
         scaleLabel: {
-          labelString: 'capacity (n)',
+          labelString: 'occupancy (n)',
           display: true,
         },
         position: 'right',
       },
       {
-        id: 'airpollution',
+        id: 'air_quality',
         type: 'linear',
         scaleLabel: {
-          labelString: 'airpollution (%)',
+          labelString: 'air_quality (%)',
           display: true,
         },
         position: 'right',
@@ -145,16 +145,16 @@ $(document).ready(() => {
   function OnSelectionChange() {
     const device = trackedDevices.findDevice(listOfDevices[listOfDevices.selectedIndex].text);
     chartData.labels = device.timeData;
-    chartData.datasets[0].data = device.noiseData;
-    chartData.datasets[1].data = device.capacityData;
-    chartData.datasets[1].data = device.airpollutionData;    
+    chartData.datasets[0].data = device.decibelsData;
+    chartData.datasets[1].data = device.occupancyData;
+    chartData.datasets[2].data = device.air_qualityData;    
     myLineChart.update();
   }
   listOfDevices.addEventListener('change', OnSelectionChange, false);
 
   // When a web socket message arrives:
   // 1. Unpack it
-  // 2. Validate it has date/time and noise
+  // 2. Validate it has date/time and decibels
   // 3. Find or create a cached device to hold the telemetry data
   // 4. Append the telemetry data
   // 5. Update the chart UI
@@ -163,8 +163,8 @@ $(document).ready(() => {
       const messageData = JSON.parse(message.data);
       console.log(messageData);
 
-      // time and either noise or capacity are required
-      if (!messageData.MessageDate || (!messageData.IotData.noise && !messageData.IotData.capacity && !messageData.IotData.airpollution)) {
+      // time and either decibels or occupancy are required
+      if (!messageData.MessageDate || (!messageData.IotData.decibels && !messageData.IotData.occupancy && !messageData.IotData.air_quality)) {
         return;
       }
 
@@ -172,13 +172,13 @@ $(document).ready(() => {
       const existingDeviceData = trackedDevices.findDevice(messageData.DeviceId);
 
       if (existingDeviceData) {
-        existingDeviceData.addData(messageData.MessageDate, messageData.IotData.noise, messageData.IotData.capacity, messageData.IotData.airpollution);
+        existingDeviceData.addData(messageData.MessageDate, messageData.IotData.decibels, messageData.IotData.occupancy, messageData.IotData.air_quality);
       } else {
         const newDeviceData = new DeviceData(messageData.DeviceId);
         trackedDevices.devices.push(newDeviceData);
         const numDevices = trackedDevices.getDevicesCount();
         deviceCount.innerText = numDevices === 1 ? `${numDevices} device` : `${numDevices} devices`;
-        newDeviceData.addData(messageData.MessageDate, messageData.IotData.noise, messageData.IotData.capacity,messageData.IotData.airpollution);
+        newDeviceData.addData(messageData.MessageDate, messageData.IotData.decibels, messageData.IotData.occupancy,messageData.IotData.air_quality);
 
         // add device to the UI list
         const node = document.createElement('option');
